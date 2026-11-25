@@ -1,0 +1,37 @@
+# 任务奖励规划器 · 生产镜像
+# 标准构建： docker build -t award-planner:1.0 .
+# 国内加速： docker build \
+#              --build-arg BASE_IMAGE=docker.m.daocloud.io/library/node:22-alpine \
+#              --build-arg NPM_REGISTRY=https://registry.npmmirror.com \
+#              -t award-planner:1.0 .
+# 运行：     docker run -d -p 3210:3210 -v planner-data:/data -e APP_PASSWORD=你的密码 award-planner:1.0
+
+ARG BASE_IMAGE=node:22-alpine
+FROM ${BASE_IMAGE}
+
+ARG NPM_REGISTRY=https://registry.npmjs.org
+
+ENV NODE_ENV=production \
+    PORT=3210 \
+    PLANNER_DATA_DIR=/data
+
+WORKDIR /app
+
+# 只装运行期依赖（jsdom 等开发依赖不进镜像）
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev --registry=${NPM_REGISTRY} && npm cache clean --force
+
+COPY src ./src
+COPY public ./public
+
+RUN mkdir -p /data
+
+# 存储卷挂载点：Sealos 上把存储卷挂到 /data
+VOLUME /data
+
+EXPOSE 3210
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+  CMD node -e "fetch('http://127.0.0.1:'+(process.env.PORT||3210)+'/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+
+CMD ["node", "src/server.js"]

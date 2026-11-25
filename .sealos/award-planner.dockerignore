@@ -1,0 +1,17 @@
+**/node_modules
+data
+docker-data
+test
+scripts
+*.log
+*.err
+*.zip
+.git
+.gitignore
+.env
+.env.*
+docker-compose.yml
+Dockerfile
+README.md
+DEPLOY.md
+.sealos

@@ -1,0 +1,14 @@
+services:
+  planner:
+    build: .
+    image: award-planner:local
+    container_name: award-planner
+    ports:
+      - "3210:3210"
+    environment:
+      PLANNER_DATA_DIR: /data
+      # 不设就是公开访问；本地测试想模拟线上的话填一个密码
+      APP_PASSWORD: "${APP_PASSWORD:-}"
+    volumes:
+      - ./docker-data:/data
+    restart: unless-stopped
