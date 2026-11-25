@@ -1,0 +1,29 @@
+{
+  "name": "award-planner",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "带奖励金机制的任务规划器：任务分难度、奖励按难度建议、完成后逐笔累加进攒钱目标",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "seed": "node scripts/seed-demo.mjs",
+    "test": "node test/smoke.mjs",
+    "test:ui": "node test/render.mjs",
+    "test:auth": "node test/auth.mjs"
+  },
+  "keywords": [
+    "task-planner",
+    "reward",
+    "nodejs",
+    "express"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.22.3"
+  },
+  "devDependencies": {
+    "jsdom": "^31.0.0"
+  }
+}

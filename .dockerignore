@@ -1,0 +1,15 @@
+node_modules
+data
+docker-data
+test
+scripts
+*.log
+*.err
+.git
+.gitignore
+.env
+.env.example
+docker-compose.yml
+Dockerfile
+README.md
+DEPLOY.md

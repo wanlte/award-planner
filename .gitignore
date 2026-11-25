@@ -1,0 +1,28 @@
+# 依赖
+node_modules/
+
+# 运行时数据（SQLite 库 / JSON 快照 / 迁移留档）
+data/
+*.db
+*.db-wal
+*.db-shm
+
+# 环境变量与密钥：只提交 .env.example
+.env
+.env.*
+!.env.example
+ssh/
+*.pem
+*.key
+id_rsa*
+
+# 日志与临时输出
+*.log
+*-out.txt
+
+# 打包产物（由源码重新生成，不入库）
+*.zip
+
+# 系统文件
+.DS_Store
+Thumbs.db
