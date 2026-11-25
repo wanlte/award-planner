@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f2f4f7">
+<meta name="color-scheme" content="light">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="奖励规划器">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="format-detection" content="telephone=no">
+<title>任务奖励规划器</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%2311161f'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='%2334d399' stroke-width='2.4'/%3E%3Cpath d='M16 11v10M13 14.2h6M13 18h6' stroke='%2334d399' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<div class="bg-glow" aria-hidden="true"></div>
+
+<div class="page">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20"><circle cx="12" cy="12" r="7.2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 8v8M9.4 10.4h5.2M9.4 13.6h5.2" stroke="currentColor" stroke-width="1.8"/></svg>
+      </div>
+      <div class="brand-text">
+        <h1>任务奖励规划器</h1>
+        <p>完成任务 · 领取奖励 · 攒到目标</p>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <span class="today" id="todayLabel"></span>
+      <button class="primary-btn" id="newTaskBtn">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+        新建任务
+      </button>
+      <button class="icon-btn logout-btn" id="logoutBtn" title="退出登录" aria-label="退出登录">
+        <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true">
+          <path d="M14.5 8.2V5.6a1.6 1.6 0 0 0-1.6-1.6H6.2A1.6 1.6 0 0 0 4.6 5.6v12.8a1.6 1.6 0 0 0 1.6 1.6h6.7a1.6 1.6 0 0 0 1.6-1.6v-2.6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          <path d="M10.4 12h9.2M16.4 8.9l3.3 3.1-3.3 3.1" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="identity-bar" aria-label="身份与看板">
+    <div class="identity-left">
+      <span class="id-label">我是</span>
+      <select class="id-select" id="meSelect"></select>
+      <button class="icon-btn id-rename" id="renameMeBtn" title="修改名字" aria-label="修改名字">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17v3z"/></svg>
+      </button>
+      <span class="id-divider"></span>
+      <div class="view-switch" id="viewSwitch">
+        <button class="seg is-active" data-view="mine">我的看板</button>
+        <button class="seg" data-view="peer">队友看板</button>
+      </div>
+    </div>
+    <div class="identity-right" id="peerCard"></div>
+  </section>
+
+  <div class="readonly-banner" id="readonlyBanner" hidden>
+    <span>只读 · 你正在查看 <b id="readonlyName"></b> 的看板，切回自己的才能改动</span>
+  </div>
+
+  <main>
+    <section class="overview" aria-label="奖励概览">
+      <article class="card fund-card">
+        <div class="fund-top">
+          <span class="eyebrow"><i class="live-dot"></i>奖励金目标</span>
+          <button class="text-btn" id="editGoalBtn">调整目标</button>
+        </div>
+
+        <div class="goal-tabs" id="goalTabs"></div>
+
+        <div class="fund-title">
+          <h2 id="goalName">旅行基金</h2>
+          <span class="goal-pill" id="goalPill">攒钱中</span>
+        </div>
+
+        <div class="fund-money">
+          <span class="currency">¥</span>
+          <span class="earned" id="earnedAmount">0</span>
+          <span class="fund-target">/ ¥<span id="goalTarget">1000</span></span>
+        </div>
+
+        <div class="progress progress-lg">
+          <div class="progress-fill" id="fundFill"></div>
+        </div>
+
+        <div class="fund-meta">
+          <span class="fund-percent"><b id="fundPercent">0%</b> 已达</span>
+          <span id="fundRemaining">还差 ¥1000</span>
+        </div>
+
+        <p class="fund-note" id="goalNote" hidden></p>
+
+        <div class="ledger">
+          <div class="ledger-head">
+            <span>最近入账</span>
+            <span class="ledger-7d" id="ledger7d"></span>
+          </div>
+          <ul id="ledgerList" class="ledger-list"></ul>
+        </div>
+      </article>
+
+      <article class="card stat-card">
+        <div class="stat-grid">
+          <div class="stat">
+            <span class="stat-num" id="statTotal">0</span>
+            <span class="stat-label">全部任务</span>
+          </div>
+          <div class="stat">
+            <span class="stat-num accent-green" id="statDone">0</span>
+            <span class="stat-label">已完成</span>
+          </div>
+          <div class="stat">
+            <span class="stat-num" id="statActive">0</span>
+            <span class="stat-label">未完成</span>
+          </div>
+          <div class="stat">
+            <span class="stat-num accent-red" id="statOverdue">0</span>
+            <span class="stat-label">已逾期</span>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="diff-block">
+          <div class="diff-row" data-level="hard">
+            <span class="lvl-dot"></span><span class="diff-name">困难</span>
+            <div class="mini-bar"><i class="fill" id="barHard"></i></div>
+            <span class="diff-count" id="countHard">0</span>
+          </div>
+          <div class="diff-row" data-level="medium">
+            <span class="lvl-dot"></span><span class="diff-name">中等</span>
+            <div class="mini-bar"><i class="fill" id="barMedium"></i></div>
+            <span class="diff-count" id="countMedium">0</span>
+          </div>
+          <div class="diff-row" data-level="easy">
+            <span class="lvl-dot"></span><span class="diff-name">容易</span>
+            <div class="mini-bar"><i class="fill" id="barEasy"></i></div>
+            <span class="diff-count" id="countEasy">0</span>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="plan-stats">
+          <div>
+            <span class="plan-label">计划奖励总额</span>
+            <strong class="plan-value" id="plannedTotal">¥0</strong>
+          </div>
+          <div>
+            <span class="plan-label">任务完成度</span>
+            <strong class="plan-value" id="completionByAmount">0%</strong>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="tasks" aria-label="任务清单">
+      <div class="section-head">
+        <h2>任务清单 <span class="goal-inline" id="taskGoalName"></span></h2>
+        <div class="filters" id="filters">
+          <button class="filter is-active" data-filter="all">全部 <span class="filter-count" data-count="all">0</span></button>
+          <button class="filter" data-filter="todo">待开始 <span class="filter-count" data-count="todo">0</span></button>
+          <button class="filter" data-filter="doing">进行中 <span class="filter-count" data-count="doing">0</span></button>
+          <button class="filter" data-filter="done">已完成 <span class="filter-count" data-count="done">0</span></button>
+          <button class="filter" data-filter="overdue">已逾期 <span class="filter-count" data-count="overdue">0</span></button>
+        </div>
+      </div>
+
+      <div class="task-grid" id="taskGrid"></div>
+
+      <div class="empty-state" id="emptyState" hidden>
+        <div class="empty-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="28" height="28"><path d="M4 7h16M4 12h10M4 17h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </div>
+        <h3 id="emptyTitle">还没有任务</h3>
+        <p id="emptyDesc">给今天要干的事定个价，完成后奖励金就进你的旅行基金。</p>
+        <button class="ghost-btn" id="emptyNewBtn">创建第一个任务</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="page-foot">
+    <span>数据保存在 <code>data/planner.json</code></span>
+    <span>奖励金额随意填 · 难易三档</span>
+  </footer>
+</div>
+
+<!-- 任务编辑 -->
+<div class="modal-backdrop" id="taskModal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="taskModalTitle">
+    <header class="modal-head">
+      <div>
+        <span class="eyebrow" id="taskModalEyebrow">新建任务</span>
+        <h2 id="taskModalTitle">给任务定个价</h2>
+      </div>
+      <button class="icon-btn" data-close="taskModal" aria-label="关闭">
+        <svg viewBox="0 0 24 24" width="18" height="18"><path d="M6 6l12 12M18 6l-12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </header>
+
+    <div class="modal-body">
+      <div class="field">
+        <label for="fTitle">任务标题</label>
+        <input id="fTitle" maxlength="60" placeholder="例如：刷完 30 道算法题">
+      </div>
+
+      <div class="field">
+        <label for="fContent">任务内容</label>
+        <textarea id="fContent" rows="2" maxlength="2000" placeholder="具体做什么、范围到哪里"></textarea>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="fStart">开始时间</label>
+          <input type="datetime-local" id="fStart">
+        </div>
+        <div class="field">
+          <label for="fEnd">结束时间</label>
+          <input type="datetime-local" id="fEnd">
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="label-row">
+          <label>难易程度</label>
+          <span class="hint" id="levelHint"></span>
+        </div>
+        <div class="level-picker" id="levelPicker">
+          <button type="button" class="level-option" data-level="easy">
+            <i class="lvl-dot"></i><span class="lvl-name">容易</span><span class="lvl-range">¥10-30</span>
+          </button>
+          <button type="button" class="level-option" data-level="medium">
+            <i class="lvl-dot"></i><span class="lvl-name">中等</span><span class="lvl-range">¥30-50</span>
+          </button>
+          <button type="button" class="level-option" data-level="hard">
+            <i class="lvl-dot"></i><span class="lvl-name">困难</span><span class="lvl-range">¥50 起</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="label-row">
+          <label for="fRewardNumber">奖励金额</label>
+          <span class="hint" id="rewardHint">容易建议 ¥20（¥10-30），也可以自己填</span>
+        </div>
+        <div class="reward-row">
+          <input type="range" id="fRewardRange" min="1" max="100" step="1" value="20">
+          <div class="reward-input">
+            <span>¥</span>
+            <input type="number" id="fRewardNumber" min="1" max="100000" step="1" value="20" inputmode="decimal">
+          </div>
+        </div>
+        <div class="reward-scale"><span>1</span><span>50</span><span>100</span></div>
+      </div>
+
+      <div class="field">
+        <label for="fMetricDesc">完成指标 · 文字描述</label>
+        <input id="fMetricDesc" maxlength="500" placeholder="可量化的验收标准，如「刷完 30 道并写完复盘」">
+      </div>
+
+      <div class="field">
+        <div class="label-row">
+          <label>完成指标 · 子项清单</label>
+          <button type="button" class="text-btn" id="addChecklistBtn">+ 添加子项</button>
+        </div>
+        <div class="checklist-editor" id="checklistEditor"></div>
+        <p class="hint checklist-hint" id="checklistHint">全部子项勾选完成，才算任务达成。</p>
+      </div>
+
+      <div class="field">
+        <div class="label-row">
+          <label for="fNumericEnabled">完成指标 · 数值目标</label>
+          <label class="switch">
+            <input type="checkbox" id="fNumericEnabled">
+            <span></span>
+          </label>
+        </div>
+        <div class="numeric-editor" id="numericEditor" hidden>
+          <div class="numeric-row">
+            <div class="mini-field">
+              <label for="fNumericCurrent">当前</label>
+              <input type="number" id="fNumericCurrent" min="0" step="1" value="0" inputmode="decimal">
+            </div>
+            <div class="mini-field">
+              <label for="fNumericTarget">目标</label>
+              <input type="number" id="fNumericTarget" min="0" step="1" value="20" inputmode="decimal">
+            </div>
+            <div class="mini-field">
+              <label for="fNumericUnit">单位</label>
+              <input type="text" id="fNumericUnit" maxlength="10" placeholder="题 / 页 / 公里">
+            </div>
+          </div>
+          <p class="hint">当前进度达到目标值时自动判定达成。</p>
+        </div>
+      </div>
+    </div>
+
+    <footer class="modal-foot">
+      <button class="danger-btn" id="deleteTaskBtn" hidden>删除任务</button>
+      <div class="spacer"></div>
+      <button class="ghost-btn" data-close="taskModal">取消</button>
+      <button class="primary-btn" id="saveTaskBtn">保存任务</button>
+    </footer>
+  </div>
+</div>
+
+<!-- 结算 -->
+<div class="modal-backdrop" id="settleModal" hidden>
+  <div class="modal modal-sm" role="dialog" aria-modal="true">
+    <header class="modal-head">
+      <div>
+        <span class="eyebrow">结算</span>
+        <h2>任务完成，收下奖励金</h2>
+      </div>
+      <button class="icon-btn" data-close="settleModal" aria-label="关闭">
+        <svg viewBox="0 0 24 24" width="18" height="18"><path d="M6 6l12 12M18 6l-12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </header>
+    <div class="modal-body">
+      <p class="settle-task" id="settleTaskTitle"></p>
+      <div class="settle-row">
+        <div class="settle-input">
+          <span>¥</span>
+          <input type="number" id="settleAmount" min="0" max="100000" step="1" value="0" inputmode="decimal">
+        </div>
+        <button class="chip" id="settleFull">按计划金额</button>
+      </div>
+      <p class="hint">实际拿到多少就填多少，0 元也可以。确认后立刻累加进「<span id="settleGoalName">旅行基金</span>」。</p>
+    </div>
+    <footer class="modal-foot">
+      <div class="spacer"></div>
+      <button class="ghost-btn" data-close="settleModal">取消</button>
+      <button class="primary-btn" id="confirmSettle">确认入账</button>
+    </footer>
+  </div>
+</div>
+
+<!-- 目标设置 -->
+<div class="modal-backdrop" id="goalModal" hidden>
+  <div class="modal modal-sm" role="dialog" aria-modal="true">
+    <header class="modal-head">
+      <div>
+        <span class="eyebrow" id="goalModalEyebrow">奖励目标</span>
+        <h2 id="goalModalTitle">这笔钱要攒去做什么</h2>
+      </div>
+      <button class="icon-btn" data-close="goalModal" aria-label="关闭">
+        <svg viewBox="0 0 24 24" width="18" height="18"><path d="M6 6l12 12M18 6l-12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </header>
+    <div class="modal-body">
+      <div class="field">
+        <label for="gName">目标名称</label>
+        <input id="gName" maxlength="30" placeholder="旅行基金 / 新耳机 / 演唱会门票">
+      </div>
+      <div class="field">
+        <label for="gTarget">目标金额</label>
+        <div class="input-affix">
+          <span>¥</span>
+          <input type="number" id="gTarget" min="1" step="1" placeholder="1000" inputmode="decimal">
+        </div>
+      </div>
+      <div class="field">
+        <label for="gNote">备注</label>
+        <input id="gNote" maxlength="100" placeholder="可选，比如「国庆去大理」">
+      </div>
+      <p class="hint" id="goalHint">每个目标下有自己的任务清单，任务结算的钱只累加进它所属的目标。</p>
+    </div>
+    <footer class="modal-foot">
+      <button class="danger-btn" id="deleteGoalBtn" hidden>删除目标</button>
+      <div class="spacer"></div>
+      <button class="ghost-btn" data-close="goalModal">取消</button>
+      <button class="primary-btn" id="saveGoalBtn">保存目标</button>
+    </footer>
+  </div>
+</div>
+
+<button class="fab" id="fabNewTask" hidden>
+  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+  新建任务
+</button>
+
+<div class="toast" id="toast" hidden></div>
+
+<script src="/app.js" type="module"></script>
+</body>
+</html>
